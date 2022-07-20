@@ -10,6 +10,7 @@ from ...knowledge_base import KnowledgeBase
 from ...sim_variable import SimMemoryVariable
 from ...utils import timethis
 from .. import Analysis, AnalysesHub
+from . import refactor_passes
 from .region_identifier import RegionIdentifier
 from .optimization_passes.optimization_pass import OptimizationPassStage
 from .optimization_passes import get_default_optimization_passes
@@ -40,6 +41,7 @@ class Decompiler(Analysis):
                  stmt_comments=None,
                  ite_exprs=None,
                  binop_operators=None,
+                 refactor_vector=None,
                  decompile=True,
                  regen_clinic=True,
                  ):
@@ -60,6 +62,7 @@ class Decompiler(Analysis):
         self._stmt_comments = stmt_comments
         self._ite_exprs = ite_exprs
         self._binop_operators = binop_operators
+        self._refactor_vector = refactor_vector
         self._regen_clinic = regen_clinic
 
         self.clinic = None  # mostly for debugging purposes
@@ -82,9 +85,11 @@ class Decompiler(Analysis):
             old_clinic = cache.clinic
             ite_exprs = cache.ite_exprs if self._ite_exprs is None else self._ite_exprs
             binop_operators = cache.binop_operators if self._binop_operators is None else self._binop_operators
+            refactor_vector = cache.refactor_vector if self._refactor_vector is None else self._refactor_vector
         except KeyError:
             ite_exprs = self._ite_exprs
             binop_operators = self._binop_operators
+            refactor_vector = self._refactor_vector
             old_codegen = None
             old_clinic = None
 
@@ -112,6 +117,7 @@ class Decompiler(Analysis):
         cache = DecompilationCache(self.func.addr)
         cache.ite_exprs = ite_exprs
         cache.binop_operators = binop_operators
+        cache.refactor_vector = refactor_vector
 
         # convert function blocks to AIL blocks
         progress_callback = lambda p, **kwargs: self._update_progress(p * (70 - 5) / 100. + 5, **kwargs)
@@ -163,7 +169,12 @@ class Decompiler(Analysis):
         # simplify it
         s = self.project.analyses.RegionSimplifier(self.func, rs.result, kb=self.kb, variable_kb=clinic.variable_kb)
         seq_node = s.result
-        seq_node = self._run_post_structuring_simplification_passes(seq_node, binop_operators=cache.binop_operators)
+        seq_node = self._run_post_structuring_simplification_passes(
+            seq_node,
+            binop_operators=cache.binop_operators,
+            # refactor_vector might be updated by Refactoring to remove refactor steps that are no longer working
+            refactor_vector=refactor_vector,
+        )
         self._update_progress(85., text='Generating code')
 
         codegen = self.project.analyses.StructuredCodeGenerator(
