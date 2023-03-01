@@ -30,7 +30,8 @@ from angr.utils.constants import DEFAULT_STATEMENT
 from angr import SIM_PROCEDURES
 from .reaching_definitions import get_all_definitions
 from .reaching_definitions.external_codeloc import ExternalCodeLocation
-from . import Analysis, register_analysis, ReachingDefinitionsAnalysis
+from .analysis import Analysis, AnalysesHub
+from .reaching_definitions import ReachingDefinitionsAnalysis
 from .reaching_definitions.function_handler import FunctionHandler
 
 if TYPE_CHECKING:
@@ -796,4 +797,4 @@ class CallingConventionAnalysis(Analysis):
         return SimTypeInt() if cc.arch.bits == 32 else SimTypeLongLong()
 
 
-register_analysis(CallingConventionAnalysis, "CallingConvention")
+AnalysesHub.register_default("CallingConvention", CallingConventionAnalysis)
