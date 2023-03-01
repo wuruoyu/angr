@@ -3,7 +3,7 @@ import logging
 import re
 from collections import defaultdict
 
-from . import Analysis
+from .analysis import Analysis
 from archinfo import all_arches
 
 l = logging.getLogger(name=__name__)
