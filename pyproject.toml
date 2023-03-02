@@ -19,6 +19,7 @@ select = [
 	"E", # pycodestyle errors
 	"F", # pyflakes
 	# "I", # isort
+	"INP", # prevent implicit namespace packages
 	"TID", # tidy imports
 	"UP", # pyupgrade
 	"W", # pycodestyle warnings
