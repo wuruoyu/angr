@@ -2,8 +2,7 @@ import logging
 
 from archinfo import ArchPcode
 
-from angr.calling_conventions import SimCC, SimRegArg, SimStackArg, DEFAULT_CC, register_default_cc, SimCCUnknown
-
+from angr.calling_conventions import DEFAULT_CC, SimCC, SimCCUnknown, SimRegArg, SimStackArg, register_default_cc
 
 l = logging.getLogger(__name__)
 

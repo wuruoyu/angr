@@ -1,22 +1,22 @@
 # pylint:disable=no-member
-import pickle
-import logging
-from typing import Optional, List, Dict, Tuple, DefaultDict
-from collections import defaultdict
 import bisect
+import logging
+import pickle
+from collections import defaultdict
+from typing import DefaultDict, Dict, List, Optional, Tuple
 
 import networkx
 
 from angr.engines.vex.lifter import VEX_IRSB_MAX_SIZE
+from angr.errors import AngrCFGError
 from angr.misc.ux import once
 from angr.protos import cfg_pb2, primitives_pb2
 from angr.serializable import Serializable
-from angr.utils.enums_conv import cfg_jumpkind_to_pb, cfg_jumpkind_from_pb
-from angr.errors import AngrCFGError
-from .cfg_node import CFGNode
-from .memory_data import MemoryData
-from .indirect_jump import IndirectJump
+from angr.utils.enums_conv import cfg_jumpkind_from_pb, cfg_jumpkind_to_pb
 
+from .cfg_node import CFGNode
+from .indirect_jump import IndirectJump
+from .memory_data import MemoryData
 
 l = logging.getLogger(name=__name__)
 

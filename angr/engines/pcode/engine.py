@@ -1,14 +1,15 @@
-from typing import Optional, Iterable
+import logging
+from typing import Iterable, Optional
 
 import claripy
-import logging
 
-from angr.engines.engine import SuccessorsMixin, SimSuccessors
-from angr.utils.constants import DEFAULT_STATEMENT
-from angr import sim_options as o
 from angr import errors
-from .lifter import PcodeLifterEngineMixin, IRSB
+from angr import sim_options as o
+from angr.engines.engine import SimSuccessors, SuccessorsMixin
+from angr.utils.constants import DEFAULT_STATEMENT
+
 from .emulate import PcodeEmulatorMixin
+from .lifter import IRSB, PcodeLifterEngineMixin
 
 l = logging.getLogger(__name__)
 
