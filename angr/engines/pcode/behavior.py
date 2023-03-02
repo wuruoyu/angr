@@ -51,6 +51,15 @@ class OpBehavior:
     def generic_compare(args: Iterable[BV], comparison: Callable[[BV, BV], BV]) -> BV:
         return claripy.If(comparison(args[0], args[1]), claripy.BVV(1, 1), claripy.BVV(0, 1))
 
+    @staticmethod
+    def float_compare(args: Iterable[BV], comparison: Callable[[BV, BV], BV]) -> BV:
+        # See 
+        # 1. https://github.com/angr/angr/blob/5f35f1994bdc4934ee44f4e3505c1a41b74a2058/angr/engines/vex/claripy/irop.py#L957-L967
+        # 2. https://github.com/angr/angr/blob/5f35f1994bdc4934ee44f4e3505c1a41b74a2058/angr/engines/vex/claripy/irop.py#L725-L740
+        # 3. https://github.com/angr/angr/blob/5f35f1994bdc4934ee44f4e3505c1a41b74a2058/angr/engines/vex/claripy/irop.py#L969-L972
+        a, b = args[0].raw_to_fp(), args[1].raw_to_fp()
+        return claripy.If(comparison(a, b), claripy.BVV(-1, len(a)), claripy.BVV(0, len(b)))
+
     @classmethod
     def booleanize(cls, in1: BV) -> BV:
         """
@@ -500,6 +509,9 @@ class OpBehaviorFloatEqual(OpBehavior):
     def __init__(self):
         super().__init__(OpCode.FLOAT_EQUAL, False)
 
+    def evaluate_binary(self, size_out: int, size_in: int, in1: BV, in2: BV) -> BV:
+        return self.float_compare((in1, in2), claripy.fpEQ)
+
     # uintb OpBehaviorFloatEqual::evaluateBinary(int4 size_out,int4 size_in,uintb in1,uintb in2) const
     #
     # {
@@ -537,6 +549,9 @@ class OpBehaviorFloatLess(OpBehavior):
 
     def __init__(self):
         super().__init__(OpCode.FLOAT_LESS, False)
+
+    def evaluate_binary(self, size_out: int, size_in: int, in1: BV, in2: BV) -> BV:
+        return self.float_compare((in1, in2), claripy.fpLT)
 
     # uintb OpBehaviorFloatLess::evaluateBinary(int4 size_out,int4 size_in,uintb in1,uintb in2) const
     #
@@ -576,6 +591,9 @@ class OpBehaviorFloatNan(OpBehavior):
     def __init__(self):
         super().__init__(OpCode.FLOAT_NAN, True)
 
+    def evaluate_unary(self, size_out: int, size_in: int, in1: BV) -> BV:
+        return claripy.BVV(-1, len(in1))
+
     # uintb OpBehaviorFloatNan::evaluateUnary(int4 size_out,int4 size_in,uintb in1) const
     #
     # {
@@ -613,6 +631,9 @@ class OpBehaviorFloatDiv(OpBehavior):
 
     def __init__(self):
         super().__init__(OpCode.FLOAT_DIV, False)
+
+    def evaluate_binary(self, size_out: int, size_in: int, in1: BV, in2: BV) -> BV:
+        return in1 / in2
 
     # uintb OpBehaviorFloatDiv::evaluateBinary(int4 size_out,int4 size_in,uintb in1,uintb in2) const
     #
